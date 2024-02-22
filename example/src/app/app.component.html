@@ -1,1 +1,15 @@
 <h1>Drm Audio Demo</h1>
+<div class="container">
+   <br><br><br><br>
+   <h1> <button (click)="pause()">Pause</button> </h1>
+    <button (click)="play()">Play</button> <br><br>
+    <button (click)="playDRMAudio()">Play DRM Audio</button><br><br>
+    <button (click)="setPlaybackRate()">set Playback rate</button><br><br>
+    <button (click)="seekToTime()">seek To Time</button>
+    <button (click)="stopAudio()">seek To Time</button>
+
+    <h1>{{currentTime}}</h1>
+    <br>
+    <h2>Sound Duration:{{ soundDuration}}</h2>
+
+  </div>

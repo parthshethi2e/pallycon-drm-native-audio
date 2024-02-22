@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AudioDRM } from 'drm-native-audio';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -7,12 +8,104 @@ import { AudioDRM } from 'drm-native-audio';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+
+  currentTime = 0;
+  soundDuration = 0;
   title = 'example';
 
+  constructor()
+  {
+    AudioDRM.addListener('soundEnded', () => {
+      console.log('Sound playback ended');
+    });
+
+    
+  }
+
   ngOnInit(): void {
-    AudioDRM.echo({value: 'print this'}).then(value => {
-      console.log(value)
-    })
+ 
+  }
+
+  playDRMAudio():void
+  {
+    AudioDRM.loadAzureDRMSoundURL(
+      {
+        audioURL:"https://transcendmediaservices-usea.streaming.media.azure.net/d167d988-e09f-4bbb-b560-2d84e9a7cb72/1626412224_11 CHAPTER 02_64x64_A.ism/manifest(format=m3u8-cmaf,encryption=cbcs-aapl)",
+        token:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWlzc3VlciIsImF1ZCI6Im15YXVkaWVuY2UiLCJ1cm46bWljcm9zb2Z0OmF6dXJlOm1lZGlhc2VydmljZXM6Y29udGVudGtleWlkZW50aWZpZXIiOiI1YTljNzgwNS03MzlkLTRlNzAtYWQyNy1kM2IyNTdhNGE3YmUiLCJleHAiOjE3MDg1NzgwMDd9.-PWHtgU3vWS31PUpE5To7W5l3GXT3vdFv7ZvLTYHOYg",
+        notificationThumbnail: "https://picsum.photos/200/300",
+        title:"Bhagvad Gita"
+      })
+
+      AudioDRM.addListener('soundEnded', () => {
+        console.log('Sound playback ended');
+      });
+
+
+
+      AudioDRM.addListener('NotificationPreviousCalled', () => {
+        console.log('NotificationPreviousCalled called ');
+      });
+
+      AudioDRM.addListener('NotificationNextCalled', () => {
+        console.log('NotificationNextCalled called ');
+      });
+    
+    
+        AudioDRM.addListener('timeUpdate', (info: any) => {
+          this.currentTime = info.time;
+        //  console.log('Time Update:', info.time);
+      });
+
+      AudioDRM.addListener('audioLoaded', (info: any) => {
+        this.soundDuration = info.duration;
+        console.log('Duration:', info.duration);
+    });
+      
 
   }
+
+  stopAudio()
+  {
+    AudioDRM.stopCurrentAudio()
+  }
+
+  seekToTime()
+  {
+    AudioDRM.seekToTime({seekTime:60})
+  }
+
+  setPlaybackRate()
+  {
+    AudioDRM.setAudioPlaybackRate({speed:2.0})
+  }
+
+  onPlayPause(): void {
+   
+  
+   AudioDRM.addListener('playerError', (error) => {
+    console.error('AVPlayer Error:', error);
+  });
+
+
+    AudioDRM.addListener('timeUpdate', (info: any) => {
+      this.currentTime = info.time;
+      console.log('Time Update:', info.time);
+  });
+  }
+
+  play(): void
+  {
+    AudioDRM.playAudio()
+  }
+
+  pause(): void {
+    AudioDRM.pauseAudio({value:"Pause"})
+  }
+
+
+
+
+
+  
+
 }
