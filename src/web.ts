@@ -9,6 +9,10 @@ export class AudioDRMWeb extends WebPlugin implements AudioDRMPlugin {
       platforms: ['web'],
     });
   }
+  async getPaused(): Promise<{ paused: boolean }> {
+    console.warn('Library not supported to web');
+    return { paused:false }
+  }
   async stopCurrentAudio(): Promise<void> {
     console.warn('Library not supported to web');
   }
@@ -26,14 +30,13 @@ export class AudioDRMWeb extends WebPlugin implements AudioDRMPlugin {
   }
 
 
-  async pauseAudio(options: { value: string }): Promise<{ value: string }> 
+  async pauseAudio(): Promise<void> 
   {
-    console.log('URL:',options);
-    return options;
+    console.warn('Library not supported to web');
   }
 
-  
-  }
+
+}
 
   
  
