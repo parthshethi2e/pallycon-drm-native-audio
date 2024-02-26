@@ -19,11 +19,11 @@ export class AppComponent implements OnInit {
       console.log('Sound playback ended');
     });
 
-    
+
   }
 
   ngOnInit(): void {
- 
+
   }
 
   playDRMAudio():void
@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
     AudioDRM.loadAzureDRMSoundURL(
       {
         audioURL:"https://transcendmediaservices-usea.streaming.media.azure.net/d167d988-e09f-4bbb-b560-2d84e9a7cb72/1626412224_11 CHAPTER 02_64x64_A.ism/manifest(format=m3u8-cmaf,encryption=cbcs-aapl)",
-        token:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWlzc3VlciIsImF1ZCI6Im15YXVkaWVuY2UiLCJ1cm46bWljcm9zb2Z0OmF6dXJlOm1lZGlhc2VydmljZXM6Y29udGVudGtleWlkZW50aWZpZXIiOiI1YTljNzgwNS03MzlkLTRlNzAtYWQyNy1kM2IyNTdhNGE3YmUiLCJleHAiOjE3MDg1NzgwMDd9.-PWHtgU3vWS31PUpE5To7W5l3GXT3vdFv7ZvLTYHOYg",
+        token:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWlzc3VlciIsImF1ZCI6Im15YXVkaWVuY2UiLCJ1cm46bWljcm9zb2Z0OmF6dXJlOm1lZGlhc2VydmljZXM6Y29udGVudGtleWlkZW50aWZpZXIiOiI1YTljNzgwNS03MzlkLTRlNzAtYWQyNy1kM2IyNTdhNGE3YmUiLCJleHAiOjE3MDkwMTE1MjF9.7fJ_lCMgMcmjYf2oyGSw-KO18vltcRIyAo8tK2lkrMs",
         notificationThumbnail: "https://picsum.photos/200/300",
         title:"Bhagvad Gita"
       })
@@ -42,15 +42,15 @@ export class AppComponent implements OnInit {
 
 
 
-      AudioDRM.addListener('NotificationPreviousCalled', () => {
+      AudioDRM.addListener('notificationPreviousCalled', () => {
         console.log('NotificationPreviousCalled called ');
       });
 
-      AudioDRM.addListener('NotificationNextCalled', () => {
+      AudioDRM.addListener('notificationNextCalled', () => {
         console.log('NotificationNextCalled called ');
       });
-    
-    
+
+
         AudioDRM.addListener('timeUpdate', (info: any) => {
           this.currentTime = info.time;
         //  console.log('Time Update:', info.time);
@@ -60,8 +60,23 @@ export class AppComponent implements OnInit {
         this.soundDuration = info.duration;
         console.log('Duration:', info.duration);
     });
-      
 
+      AudioDRM.addListener('isAudioPause',() => {
+        console.log("Event audio is paused")
+      })
+
+      AudioDRM.addListener('isAudioPlaying',() => {
+        console.log("Event audio is played")
+      })
+
+  }
+
+
+  async getPaused()
+  {
+    const result = await AudioDRM.getPaused();
+
+    console.log("Audio Paused:"+ result.paused)
   }
 
   stopAudio()
@@ -80,8 +95,8 @@ export class AppComponent implements OnInit {
   }
 
   onPlayPause(): void {
-   
-  
+
+
    AudioDRM.addListener('playerError', (error) => {
     console.error('AVPlayer Error:', error);
   });
@@ -99,13 +114,13 @@ export class AppComponent implements OnInit {
   }
 
   pause(): void {
-    AudioDRM.pauseAudio({value:"Pause"})
+    AudioDRM.pauseAudio()
   }
 
 
 
 
 
-  
+
 
 }

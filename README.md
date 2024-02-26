@@ -14,18 +14,21 @@ npx cap sync
 <docgen-index>
 
 * [`loadAzureDRMSoundURL(...)`](#loadazuredrmsoundurl)
-* [`pauseAudio(...)`](#pauseaudio)
+* [`pauseAudio()`](#pauseaudio)
 * [`setAudioPlaybackRate(...)`](#setaudioplaybackrate)
 * [`seekToTime(...)`](#seektotime)
 * [`stopCurrentAudio()`](#stopcurrentaudio)
 * [`addListener('soundEnded', ...)`](#addlistenersoundended)
 * [`addListener('isBuffering', ...)`](#addlistenerisbuffering)
 * [`addListener('audioLoaded', ...)`](#addlisteneraudioloaded)
-* [`addListener('NotificationPreviousCalled', ...)`](#addlistenernotificationpreviouscalled)
-* [`addListener('NotificationNextCalled', ...)`](#addlistenernotificationnextcalled)
+* [`addListener('notificationPreviousCalled', ...)`](#addlistenernotificationpreviouscalled)
+* [`addListener('notificationNextCalled', ...)`](#addlistenernotificationnextcalled)
 * [`addListener('timeUpdate', ...)`](#addlistenertimeupdate)
 * [`addListener('playerError', ...)`](#addlistenerplayererror)
+* [`addListener('isAudioPlaying', ...)`](#addlistenerisaudioplaying)
+* [`addListener('isAudioPause', ...)`](#addlistenerisaudiopause)
 * [`playAudio()`](#playaudio)
+* [`getPaused()`](#getpaused)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -46,17 +49,11 @@ loadAzureDRMSoundURL(options: { audioURL: String; token: String; notificationThu
 --------------------
 
 
-### pauseAudio(...)
+### pauseAudio()
 
 ```typescript
-pauseAudio(options: { value: string; }) => Promise<{ value: string; }>
+pauseAudio() => Promise<void>
 ```
-
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: string; }</code> |
-
-**Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
 
 --------------------
 
@@ -144,15 +141,15 @@ addListener(eventName: 'audioLoaded', listenerFunc: (soundDuration: number) => v
 --------------------
 
 
-### addListener('NotificationPreviousCalled', ...)
+### addListener('notificationPreviousCalled', ...)
 
 ```typescript
-addListener(eventName: 'NotificationPreviousCalled', listenerFunc: () => void) => Promise<PluginListenerHandle>
+addListener(eventName: 'notificationPreviousCalled', listenerFunc: () => void) => Promise<PluginListenerHandle>
 ```
 
 | Param              | Type                                      |
 | ------------------ | ----------------------------------------- |
-| **`eventName`**    | <code>'NotificationPreviousCalled'</code> |
+| **`eventName`**    | <code>'notificationPreviousCalled'</code> |
 | **`listenerFunc`** | <code>() =&gt; void</code>                |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
@@ -160,15 +157,15 @@ addListener(eventName: 'NotificationPreviousCalled', listenerFunc: () => void) =
 --------------------
 
 
-### addListener('NotificationNextCalled', ...)
+### addListener('notificationNextCalled', ...)
 
 ```typescript
-addListener(eventName: 'NotificationNextCalled', listenerFunc: () => void) => Promise<PluginListenerHandle>
+addListener(eventName: 'notificationNextCalled', listenerFunc: () => void) => Promise<PluginListenerHandle>
 ```
 
 | Param              | Type                                  |
 | ------------------ | ------------------------------------- |
-| **`eventName`**    | <code>'NotificationNextCalled'</code> |
+| **`eventName`**    | <code>'notificationNextCalled'</code> |
 | **`listenerFunc`** | <code>() =&gt; void</code>            |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
@@ -208,11 +205,54 @@ addListener(eventName: 'playerError', listenerFunc: (error: any) => void) => Pro
 --------------------
 
 
+### addListener('isAudioPlaying', ...)
+
+```typescript
+addListener(eventName: 'isAudioPlaying', listenerFunc: (error: any) => void) => Promise<PluginListenerHandle>
+```
+
+| Param              | Type                                 |
+| ------------------ | ------------------------------------ |
+| **`eventName`**    | <code>'isAudioPlaying'</code>        |
+| **`listenerFunc`** | <code>(error: any) =&gt; void</code> |
+
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
+
+--------------------
+
+
+### addListener('isAudioPause', ...)
+
+```typescript
+addListener(eventName: 'isAudioPause', listenerFunc: (error: any) => void) => Promise<PluginListenerHandle>
+```
+
+| Param              | Type                                 |
+| ------------------ | ------------------------------------ |
+| **`eventName`**    | <code>'isAudioPause'</code>          |
+| **`listenerFunc`** | <code>(error: any) =&gt; void</code> |
+
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
+
+--------------------
+
+
 ### playAudio()
 
 ```typescript
 playAudio() => Promise<void>
 ```
+
+--------------------
+
+
+### getPaused()
+
+```typescript
+getPaused() => Promise<{ paused: boolean; }>
+```
+
+**Returns:** <code>Promise&lt;{ paused: boolean; }&gt;</code>
 
 --------------------
 
