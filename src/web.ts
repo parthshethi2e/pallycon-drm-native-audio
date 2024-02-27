@@ -11,6 +11,7 @@ export class AudioDRMWeb extends WebPlugin implements AudioDRMPlugin {
   }
   async getPaused(): Promise<{ paused: boolean }> {
     console.warn('Library not supported to web');
+    console.warn('Library not supported to web');
     return { paused:false }
   }
   async stopCurrentAudio(): Promise<void> {
