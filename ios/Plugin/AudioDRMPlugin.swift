@@ -92,7 +92,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             
             if skd
             {
-                print(audioDRMViewModel.licenseURI)
+                //print(audioDRMViewModel.licenseURI)
                 audioDRMViewModel.processLicenseURI(audioDRMViewModel.licenseURI, originalUrl: audioURL)
                 { [self]
                     processed in
@@ -231,7 +231,6 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
                 if let data = data {
                     if var responseString = String(data:data,encoding:.utf8)
                     {
-                        print(responseString)
                         if responseString.contains("<ckc>") || responseString.contains("</ckc>") {
                             responseString = responseString.replacingOccurrences(of: "<ckc>", with: "").replacingOccurrences(of: "</ckc>", with: "")
                             let ckcData = Data(base64Encoded: responseString)!
@@ -322,22 +321,44 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         
     }
     
-    @objc func seekToTime(_ call: CAPPluginCall)
-    {
-        let seconds = call.getDouble("seekTime") ?? 1.0
-        let preferredTimeScale: CMTimeScale = 1_000 // Represents the scale of a second. 1000 means milliseconds.
+    @objc func seekToTime(_ call: CAPPluginCall) {
+        let seconds = call.getDouble("seekTime") ?? 0.0
+        let preferredTimeScale: CMTimeScale = 1_000
         let time = CMTime(seconds: seconds, preferredTimescale: preferredTimeScale)
         
-        AVPlayerConfiguration.sharedInstance.player.seek(to: time, completionHandler: { success in
-            if success {
-                print("Successfully moved to the specified time.")
-            } else {
-                NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Seek Failed"])
-                //self.notifyListeners("playerError", data: ["error": "Seek Failed"])
-            }
-        })
+        DispatchQueue.main.async {
+            AVPlayerConfiguration.sharedInstance.player.seek(to: time, completionHandler: { [weak self] success in
+                guard let self = self else { return }
+                
+                if success {
+                    print("Successfully moved to the specified time.")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.updateNowPlayingInfo(time: seconds)
+                    }
+                    self.notifyListeners("seekSuccess", data: ["time": seconds])
+                } else {
+                    NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Seek Failed"])
+                    self.notifyListeners("playerError", data: ["error": "Seek Failed"])
+                }
+            })
+        }
     }
     
+    func updateNowPlayingInfo(time: Double) {
+        guard let currentItem = AVPlayerConfiguration.sharedInstance.player.currentItem else { return }
+        
+        var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = currentItem.duration.seconds
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = time
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = AVPlayerConfiguration.sharedInstance.player.rate
+        
+        // Clear and update the now playing info to force a refresh
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        DispatchQueue.main.async {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        }
+    }
+
     @objc func stopCurrentAudio(_ call: CAPPluginCall)
     {
         AVPlayerConfiguration.sharedInstance.player.pause()
@@ -349,7 +370,6 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             try AVAudioSession.sharedInstance().setActive(false)
         } catch {
             NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Failed to deactivate audio session: \(error)"])
-//            self.notifyListeners("playerError", data: ["error": "Failed to deactivate audio session: \(error)"])
 
         }
         

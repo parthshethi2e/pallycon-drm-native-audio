@@ -57,7 +57,6 @@ class AudioDRMViewModel
             self.licenseURI = String(self.licenseURI.dropFirst(5))
             self.licenseURI = self.licenseURI.trimmingCharacters(in: .whitespacesAndNewlines)
             self.licenseURI = String(self.licenseURI.dropLast(1))
-             print(self.licenseURI)
             self.tempIndex = getIndexOfSubString(fullString: originalUrl, searchString: ".ism/")
             self.tempUrl = String(originalUrl.dropLast(originalUrl.count - (self.tempIndex + 5)))
             
@@ -67,9 +66,7 @@ class AudioDRMViewModel
                 return
             }
             
-
              secondURL = "\(urlString)\(self.licenseURI)"
-            // print(secondURL)
              completion(true)
         }
     }
