@@ -130,7 +130,6 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             let playerItem = AVPlayerItem(asset: asset)
             AVPlayerConfiguration.sharedInstance.player = AVPlayer(playerItem: playerItem)
             AVPlayerConfiguration.sharedInstance.player.play()
-            setNotificationForAudio(title: title, thumbnailURL: thumbnailURL)
             NotificationCenter.default.addObserver(self, selector: #selector(self.finishedPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object:  AVPlayerConfiguration.sharedInstance.player.currentItem)
             NotificationCenter.default.addObserver(self, selector: #selector(handleAudioSessionInterruption), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
             NotificationCenter.default.addObserver(self, selector: #selector(errorNotificationCall), name: .audioPlayerErrorNotification , object: nil)
@@ -139,7 +138,8 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             
             AVPlayerConfiguration.sharedInstance.player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { [self] (CMTime) -> Void in
                 if AVPlayerConfiguration.sharedInstance.player.currentItem?.status == .readyToPlay {
-                    
+                    setNotificationForAudio(title: title, thumbnailURL: thumbnailURL)
+
                     if (AVPlayerConfiguration.sharedInstance.player.currentItem?.duration) != nil
                     {
                         let totalSeconds = CMTimeGetSeconds((AVPlayerConfiguration.sharedInstance.player.currentItem?.asset.duration)!)
