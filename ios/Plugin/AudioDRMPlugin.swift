@@ -61,7 +61,6 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
     @objc func pauseAudio(_ call: CAPPluginCall)
     {
         AVPlayerConfiguration.sharedInstance.player.pause()
-       // print("Pause")
         call.resolve()
     }
     
@@ -93,7 +92,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             
             if skd
             {
-                print(audioDRMViewModel.licenseURI)
+                //print(audioDRMViewModel.licenseURI)
                 audioDRMViewModel.processLicenseURI(audioDRMViewModel.licenseURI, originalUrl: audioURL)
                 { [self]
                     processed in
@@ -134,6 +133,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             setNotificationForAudio(title: title, thumbnailURL: thumbnailURL)
             NotificationCenter.default.addObserver(self, selector: #selector(self.finishedPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object:  AVPlayerConfiguration.sharedInstance.player.currentItem)
             NotificationCenter.default.addObserver(self, selector: #selector(handleAudioSessionInterruption), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
+            NotificationCenter.default.addObserver(self, selector: #selector(errorNotificationCall), name: .audioPlayerErrorNotification , object: nil)
             
             AVPlayerConfiguration.sharedInstance.player.addObserver(self, forKeyPath: "timeControlStatus", options: [.old, .new], context: nil)
             
@@ -144,7 +144,6 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
                     {
                         let totalSeconds = CMTimeGetSeconds((AVPlayerConfiguration.sharedInstance.player.currentItem?.asset.duration)!)
                         self.notifyListeners("audioLoaded", data: ["duration": totalSeconds])
-                      //  print("Total Seconds \(totalSeconds)")
                         
                     }
                     
@@ -164,7 +163,8 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
                     playerItemStatusObserver = AVPlayerConfiguration.sharedInstance.player.currentItem?.observe(\.status, options: [.new, .old], changeHandler: { [weak self] (playerItem, change) in
                         if playerItem.status == .failed {
                             guard let error = playerItem.error else { return }
-                            self?.notifyListeners("playerError", data: ["error": error.localizedDescription])
+                            //self?.notifyListeners("playerError", data: ["error": error.localizedDescription])
+                            NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": error.localizedDescription])
                         }
                     })
                 }
@@ -173,7 +173,8 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             }
         }else
         {
-            self.notifyListeners("playerError", data: ["error": "Error Loading URL."])
+            NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "error.localizedDescription"])
+            //self.notifyListeners("playerError", data: ["error": "Error Loading URL."])
         }
     }
     
@@ -194,7 +195,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         
         guard let url = loadingRequest.request.url else {
             self.notifyListeners("playerError", data: ["error": "Unable to read the url/host data."])
-            //print("🔑", #function, "Unable to read the url/host data.")
+            NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Unable to read the url/host data."])
             loadingRequest.finishLoading(with: NSError(domain: "com.error", code: -1, userInfo: nil))
             return false
         }
@@ -211,8 +212,8 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
                 let spcData = try? loadingRequest.streamingContentKeyRequestData(forApp: certificateData, contentIdentifier: contentIdData, options: nil),
                 let dataRequest = loadingRequest.dataRequest else {
                 loadingRequest.finishLoading(with: NSError(domain: "com.error", code: -3, userInfo: nil))
-                self.notifyListeners("playerError", data: ["error": "Unable to read the SPC data."])
-               // print(#function, "Unable to read the SPC data.")
+                NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Unable to read the SPC data."])
+                //self.notifyListeners("playerError", data: ["error": "Unable to read the SPC data."])
                 return
             }
             
@@ -230,17 +231,22 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
                 if let data = data {
                     if var responseString = String(data:data,encoding:.utf8)
                     {
-                        print(responseString)
-                        responseString = responseString.replacingOccurrences(of: "<ckc>", with: "").replacingOccurrences(of: "</ckc>", with: "")
-                        let ckcData = Data(base64Encoded: responseString)!
-                        dataRequest.respond(with: ckcData)
-                        loadingRequest.finishLoading()
+                        if responseString.contains("<ckc>") || responseString.contains("</ckc>") {
+                            responseString = responseString.replacingOccurrences(of: "<ckc>", with: "").replacingOccurrences(of: "</ckc>", with: "")
+                            let ckcData = Data(base64Encoded: responseString)!
+                            dataRequest.respond(with: ckcData)
+                            loadingRequest.finishLoading()
+                        }else
+                        {
+                            NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Unable to read the SPC data."])
+                        }
                     }else
                     {
-                        print(#function,"Unable to fetch the CKC")
+                        NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Unable to read the SPC data."])
                     }
                 }else
                 {
+                    NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "com.error -4"])
                     print(#function, "Unable to fetch the CKC.")
                     loadingRequest.finishLoading(with: NSError(domain: "com.error", code: -4, userInfo: nil))
                 }
@@ -315,21 +321,44 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         
     }
     
-    @objc func seekToTime(_ call: CAPPluginCall)
-    {
-        let seconds = call.getDouble("seekTime") ?? 1.0
-        let preferredTimeScale: CMTimeScale = 1_000 // Represents the scale of a second. 1000 means milliseconds.
+    @objc func seekToTime(_ call: CAPPluginCall) {
+        let seconds = call.getDouble("seekTime") ?? 0.0
+        let preferredTimeScale: CMTimeScale = 1_000
         let time = CMTime(seconds: seconds, preferredTimescale: preferredTimeScale)
         
-        AVPlayerConfiguration.sharedInstance.player.seek(to: time, completionHandler: { success in
-            if success {
-                print("Successfully moved to the specified time.")
-            } else {
-                self.notifyListeners("playerError", data: ["error": "Seek Failed"])
-            }
-        })
+        DispatchQueue.main.async {
+            AVPlayerConfiguration.sharedInstance.player.seek(to: time, completionHandler: { [weak self] success in
+                guard let self = self else { return }
+                
+                if success {
+                    print("Successfully moved to the specified time.")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.updateNowPlayingInfo(time: seconds)
+                    }
+                    self.notifyListeners("seekSuccess", data: ["time": seconds])
+                } else {
+                    NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Seek Failed"])
+                    self.notifyListeners("playerError", data: ["error": "Seek Failed"])
+                }
+            })
+        }
     }
     
+    func updateNowPlayingInfo(time: Double) {
+        guard let currentItem = AVPlayerConfiguration.sharedInstance.player.currentItem else { return }
+        
+        var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = currentItem.duration.seconds
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = time
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = AVPlayerConfiguration.sharedInstance.player.rate
+        
+        // Clear and update the now playing info to force a refresh
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        DispatchQueue.main.async {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        }
+    }
+
     @objc func stopCurrentAudio(_ call: CAPPluginCall)
     {
         AVPlayerConfiguration.sharedInstance.player.pause()
@@ -340,7 +369,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         do {
             try AVAudioSession.sharedInstance().setActive(false)
         } catch {
-            self.notifyListeners("playerError", data: ["error": "Failed to deactivate audio session: \(error)"])
+            NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Failed to deactivate audio session: \(error)"])
 
         }
         
@@ -385,6 +414,18 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         //  MPRemoteCommandCenter.shared().playCommand.addTarget(self, action: #selector(seekBackword))
     }
     
+    @objc func errorNotificationCall(_ notification: Notification) {
+        
+        UIApplication.shared.endReceivingRemoteControlEvents()
+        
+        DispatchQueue.main.async {
+            if let userInfo = notification.userInfo,
+               let notificationText = userInfo["playerError"] as? String {
+                print("Received notification text: \(notificationText)")
+                self.notifyListeners("playerError", data: ["error": notificationText])
+            }
+        }
+    }
     
     
     @objc func notificationPlay() -> MPRemoteCommandHandlerStatus
