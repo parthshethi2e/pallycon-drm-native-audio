@@ -69,6 +69,10 @@ export class AppComponent implements OnInit {
         console.log("Event audio is played")
       })
 
+      AudioDRM.addListener('playerError', (error) => {
+        console.error('AVPlayer Error:', error);
+      });
+
   }
 
 
