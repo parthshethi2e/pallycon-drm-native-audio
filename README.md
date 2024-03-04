@@ -39,12 +39,12 @@ npx cap sync
 ### loadAzureDRMSoundURL(...)
 
 ```typescript
-loadAzureDRMSoundURL(options: { audioURL: String; token: String; notificationThumbnail: String; title: String; }) => Promise<void>
+loadAzureDRMSoundURL(options: { audioURL: String; token: String; notificationThumbnail: String; title: String; seekTime: number; }) => Promise<void>
 ```
 
-| Param         | Type                                                                                                                                                                                    |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`options`** | <code>{ audioURL: <a href="#string">String</a>; token: <a href="#string">String</a>; notificationThumbnail: <a href="#string">String</a>; title: <a href="#string">String</a>; }</code> |
+| Param         | Type                                                                                                                                                                                                      |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ audioURL: <a href="#string">String</a>; token: <a href="#string">String</a>; notificationThumbnail: <a href="#string">String</a>; title: <a href="#string">String</a>; seekTime: number; }</code> |
 
 --------------------
 
