@@ -75,8 +75,8 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
     
     @objc func loadAzureDRMSoundURL(_ call: CAPPluginCall)
     {
-        let audioURL = call.getString("audioURL") ?? "Denied"
-        let audioTitle = call.getString("title") ?? "Denied"
+        let audioURL = call.getString("audioURL") ?? "error"
+        let audioTitle = call.getString("title") ?? "error"
         let thumbnailUrl = call.getString("notificationThumbnail") ?? "Invalid"
         
         do {
@@ -89,10 +89,8 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         audioDRMViewModel.getSkdWithAlamofire(url: audioURL)
         { [self]
             skd in
-            
             if skd
             {
-                //print(audioDRMViewModel.licenseURI)
                 audioDRMViewModel.processLicenseURI(audioDRMViewModel.licenseURI, originalUrl: audioURL)
                 { [self]
                     processed in
@@ -142,6 +140,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
 
                     if (AVPlayerConfiguration.sharedInstance.player.currentItem?.duration) != nil
                     {
+                        
                         let totalSeconds = CMTimeGetSeconds((AVPlayerConfiguration.sharedInstance.player.currentItem?.asset.duration)!)
                         self.notifyListeners("audioLoaded", data: ["duration": totalSeconds])
                         
@@ -159,11 +158,10 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
                             
                         }
                     }
-                    
-                    playerItemStatusObserver = AVPlayerConfiguration.sharedInstance.player.currentItem?.observe(\.status, options: [.new, .old], changeHandler: { [weak self] (playerItem, change) in
+
+                    playerItemStatusObserver = AVPlayerConfiguration.sharedInstance.player.currentItem?.observe(\.status, options: [.new, .old], changeHandler: { (playerItem, change) in
                         if playerItem.status == .failed {
                             guard let error = playerItem.error else { return }
-                            //self?.notifyListeners("playerError", data: ["error": error.localizedDescription])
                             NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": error.localizedDescription])
                         }
                     })
@@ -174,7 +172,6 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         }else
         {
             NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "error.localizedDescription"])
-            //self.notifyListeners("playerError", data: ["error": "Error Loading URL."])
         }
     }
     
@@ -267,7 +264,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             return
         }
         
-        var request = URLRequest(url: certificateURL)
+        let request = URLRequest(url: certificateURL)
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -326,6 +323,8 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         let preferredTimeScale: CMTimeScale = 1_000
         let time = CMTime(seconds: seconds, preferredTimescale: preferredTimeScale)
         
+        print("Time: \(time)")
+        
         DispatchQueue.main.async {
             AVPlayerConfiguration.sharedInstance.player.seek(to: time, completionHandler: { [weak self] success in
                 guard let self = self else { return }
@@ -364,13 +363,16 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         AVPlayerConfiguration.sharedInstance.player.pause()
         AVPlayerConfiguration.sharedInstance.player.rate = 0
         AVPlayerConfiguration.sharedInstance.player.replaceCurrentItem(with: nil)
+        
+        DispatchQueue.main.async {
+            UIApplication.shared.endReceivingRemoteControlEvents()
+        }
+        
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
-        UIApplication.shared.endReceivingRemoteControlEvents()
         do {
             try AVAudioSession.sharedInstance().setActive(false)
         } catch {
             NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "Failed to deactivate audio session: \(error)"])
-
         }
         
         call.resolve()
@@ -401,14 +403,17 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         MPRemoteCommandCenter.shared().nextTrackCommand.isEnabled = true
         MPRemoteCommandCenter.shared().nextTrackCommand.addTarget(self, action: #selector(nextButtonTapped))
     }
+    
     func addActionToChangePlayBackPosition(){
         MPRemoteCommandCenter.shared().changePlaybackPositionCommand.isEnabled = false
         // MPRemoteCommandCenter.shared().changePlaybackPositionCommand.addTarget(self, action: #selector(changePlaybackPosition))
     }
+    
     func addActionToseekForwardCommand(){
         MPRemoteCommandCenter.shared().seekForwardCommand.isEnabled = false
         //  MPRemoteCommandCenter.shared().playCommand.addTarget(self, action: #selector(seekForward))
     }
+    
     func addActionToseekBackwordCommand(){
         MPRemoteCommandCenter.shared().seekBackwardCommand.isEnabled = false
         //  MPRemoteCommandCenter.shared().playCommand.addTarget(self, action: #selector(seekBackword))
