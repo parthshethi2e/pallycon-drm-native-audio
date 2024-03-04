@@ -78,7 +78,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         let audioURL = call.getString("audioURL") ?? "error"
         let audioTitle = call.getString("title") ?? "error"
         let thumbnailUrl = call.getString("notificationThumbnail") ?? "Invalid"
-        
+        let seekTimeTo = call.getDouble("seekTime") ??  00
         do {
             try AVAudioSession.sharedInstance().setActive(true)
         } catch let error {
@@ -100,7 +100,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
                             sound in
                             if sound
                             {
-                                playMusic(streamingURL: audioURL,title: audioTitle, thumbnailURL: thumbnailUrl)
+                                playMusic(streamingURL: audioURL,title: audioTitle, thumbnailURL: thumbnailUrl,startTime: seekTimeTo)
                             }
                         }
                     }
@@ -116,7 +116,17 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         }
     }
     
-    func playMusic(streamingURL:String, title:String,thumbnailURL: String)
+    func seekToTimeWhileLoading(playerItem: AVPlayerItem, startTime: Double) {
+        let time = CMTime(seconds: startTime, preferredTimescale: 1_000)
+        playerItem.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] finished in
+            guard let self = self, finished else { return }
+            AVPlayerConfiguration.sharedInstance.player.play()
+            
+            self.updateNowPlayingInfo(time: startTime)
+        }
+    }
+    
+    func playMusic(streamingURL:String, title:String,thumbnailURL: String,startTime:Double)
     {
         let escapedString = streamingURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
         AVPlayerConfiguration.sharedInstance.setPlayerWithURL()
@@ -128,6 +138,15 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
             let playerItem = AVPlayerItem(asset: asset)
             AVPlayerConfiguration.sharedInstance.player = AVPlayer(playerItem: playerItem)
             AVPlayerConfiguration.sharedInstance.player.play()
+            
+            let seekTime = CMTime(seconds: startTime, preferredTimescale: 1_000)
+            playerItem.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] finished in
+                guard let self = self, finished else { return }
+                AVPlayerConfiguration.sharedInstance.player.play()
+                
+                //self.updateNowPlayingInfo(time: startTime)
+            }
+            
             NotificationCenter.default.addObserver(self, selector: #selector(self.finishedPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object:  AVPlayerConfiguration.sharedInstance.player.currentItem)
             NotificationCenter.default.addObserver(self, selector: #selector(handleAudioSessionInterruption), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
             NotificationCenter.default.addObserver(self, selector: #selector(errorNotificationCall), name: .audioPlayerErrorNotification , object: nil)
@@ -322,9 +341,7 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         let seconds = call.getDouble("seekTime") ?? 0.0
         let preferredTimeScale: CMTimeScale = 1_000
         let time = CMTime(seconds: seconds, preferredTimescale: preferredTimeScale)
-        
-        print("Time: \(time)")
-        
+
         DispatchQueue.main.async {
             AVPlayerConfiguration.sharedInstance.player.seek(to: time, completionHandler: { [weak self] success in
                 guard let self = self else { return }
@@ -351,7 +368,6 @@ public class AudioDRMPlugin: CAPPlugin, AVAssetResourceLoaderDelegate {
         nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = time
         nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = AVPlayerConfiguration.sharedInstance.player.rate
         
-        // Clear and update the now playing info to force a refresh
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         DispatchQueue.main.async {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
