@@ -28,13 +28,14 @@ export class AppComponent implements OnInit {
 
   playDRMAudio():void
   {
-    AudioDRM.loadAzureDRMSoundURL(
+    AudioDRM.loadPallyconSound(
       {
-        audioURL:"https://transcendmediaservices-usea.streaming.media.azure.net/d167d988-e09f-4bbb-b560-2d84e9a7cb72/1626412224_11 CHAPTER 02_64x64_A.ism/manifest(format=m3u8-cmaf,encryption=cbcs-aapl)",
-        token:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJteWlzc3VlciIsImF1ZCI6Im15YXVkaWVuY2UiLCJ1cm46bWljcm9zb2Z0OmF6dXJlOm1lZGlhc2VydmljZXM6Y29udGVudGtleWlkZW50aWZpZXIiOiI1YTljNzgwNS03MzlkLTRlNzAtYWQyNy1kM2IyNTdhNGE3YmUiLCJleHAiOjE3MDk2MTk1NDN9.FiFmZI1DH3FafzhrhyJwxdjU6tkSeVzoky4bsEtmbCs",
+        audioURL:"https://bbttranscendstorage.blob.core.windows.net/pallycon-audio/3/hls/master.m3u8",
+        token:"eyJkcm1fdHlwZSI6IkZhaXJQbGF5Iiwic2l0ZV9pZCI6IlVTRTUiLCJ1c2VyX2lkIjoidHJhbnNjZW5kIiwiY2lkIjoxLCJwb2xpY3kiOiJHZk5mSlBsTWVnUWg5NHgyVXpJQkRSTHhyNGEySUM5QmhYMVBEQ0dVTVBIeVduZEYrMnRVK0psbUdRL0VzQXo3bm1IV0tmN1NVdDFEaXkxTjdobjl4dz09IiwidGltZXN0YW1wIjoiMjAyNC0wMy0wNVQwNjozNzowOFoiLCJoYXNoIjoiRkE3MXVSWXpwdjRsMHlHdW9IaEFTSWpkNGRTV0lNYTNueW1jRGxQWlNGaz0iLCJyZXNwb25zZV9mb3JtYXQiOiJvcmlnaW5hbCIsImtleV9yb3RhdGlvbiI6ZmFsc2V9",
         notificationThumbnail: "https://picsum.photos/200/300",
         title:"Bhagvad Gita",
-        seekTime:60
+        seekTime:60,
+        contentId:""
       })
 
       AudioDRM.addListener('soundEnded', () => {

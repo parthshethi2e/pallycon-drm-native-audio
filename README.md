@@ -13,7 +13,7 @@ npx cap sync
 
 <docgen-index>
 
-* [`loadAzureDRMSoundURL(...)`](#loadazuredrmsoundurl)
+* [`loadPallyconSound(...)`](#loadpallyconsound)
 * [`pauseAudio()`](#pauseaudio)
 * [`setAudioPlaybackRate(...)`](#setaudioplaybackrate)
 * [`seekToTime(...)`](#seektotime)
@@ -36,15 +36,15 @@ npx cap sync
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### loadAzureDRMSoundURL(...)
+### loadPallyconSound(...)
 
 ```typescript
-loadAzureDRMSoundURL(options: { audioURL: String; token: String; notificationThumbnail: String; title: String; seekTime: number; }) => Promise<void>
+loadPallyconSound(options: { audioURL: String; token: String; notificationThumbnail: String; title: String; seekTime: number; contentId: String; }) => Promise<void>
 ```
 
-| Param         | Type                                                                                                                                                                                                      |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`options`** | <code>{ audioURL: <a href="#string">String</a>; token: <a href="#string">String</a>; notificationThumbnail: <a href="#string">String</a>; title: <a href="#string">String</a>; seekTime: number; }</code> |
+| Param         | Type                                                                                                                                                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ audioURL: <a href="#string">String</a>; token: <a href="#string">String</a>; notificationThumbnail: <a href="#string">String</a>; title: <a href="#string">String</a>; seekTime: number; contentId: <a href="#string">String</a>; }</code> |
 
 --------------------
 

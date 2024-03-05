@@ -23,7 +23,7 @@ export class AudioDRMWeb extends WebPlugin implements AudioDRMPlugin {
   async setAudioPlaybackRate(_options: { speed: number; }): Promise<void> {
     console.warn('Library not supported to web');
   }
-  async loadAzureDRMSoundURL(_options: { audioURL: String; token: String; }): Promise<void> {
+  async loadPallyconSound(_options: { audioURL: String; token: String; }): Promise<void> {
     console.warn('Library not supported to web');
   }
   async playAudio(): Promise<void> {
