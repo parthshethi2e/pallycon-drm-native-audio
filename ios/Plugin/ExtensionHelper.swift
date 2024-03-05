@@ -10,6 +10,6 @@ import Foundation
 
 extension Notification.Name
 {
-    static let soundEndedNotification = Notification.Name("soundEndedNotification")
+   // static let soundEndedNotification = Notification.Name("soundEndedNotification")
     static let audioPlayerErrorNotification = Notification.Name("audioPlayerErrorNotification")
 }

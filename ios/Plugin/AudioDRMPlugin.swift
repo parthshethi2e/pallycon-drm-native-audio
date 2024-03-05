@@ -10,7 +10,7 @@ import PallyConFPSSDK
  */
 @objc(AudioDRMPlugin)
 public class AudioDRMPlugin: CAPPlugin {
-    
+   
     private let implementation = AudioDRM()
     private var timeObserverToken: Any?
     private var playerItemStatusObserver: NSKeyValueObservation?
@@ -41,6 +41,7 @@ public class AudioDRMPlugin: CAPPlugin {
             
             let asset = AVURLAsset(url: url)
             fpsSDK?.prepare(urlAsset: asset, userId: "transcend", contentId: contentId, token: audioDRMViewModel.audioDRMToken)
+            
             let playerItem = AVPlayerItem(asset: asset)
             AVPlayerConfiguration.sharedInstance.player = AVPlayer(playerItem: playerItem)
             AVPlayerConfiguration.sharedInstance.player.play()
@@ -97,6 +98,7 @@ public class AudioDRMPlugin: CAPPlugin {
             NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "error.localizedDescription"])
         }
     }
+    
     
     @objc func finishedPlaying( _ myNotification:NSNotification) {
         self.notifyListeners("soundEnded", data: [:])
@@ -169,8 +171,6 @@ public class AudioDRMPlugin: CAPPlugin {
             self.updateNowPlayingInfo(time: startTime)
         }
     }
-    
-   
     
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "timeControlStatus", let player = object as? AVPlayer {

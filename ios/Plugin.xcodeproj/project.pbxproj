@@ -18,7 +18,6 @@
 		50E1A94820377CB70090CE1A /* AudioDRMPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E1A94720377CB70090CE1A /* AudioDRMPlugin.swift */; };
 		840267482B73769B001429C6 /* ExtensionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840267472B73769B001429C6 /* ExtensionHelper.swift */; };
 		8459EE882B7C9314004407EC /* AudioDRMViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8459EE872B7C9314004407EC /* AudioDRMViewModel.swift */; };
-		84B2C1562B7F6999004C278A /* fairplay.cer in Resources */ = {isa = PBXBuildFile; fileRef = 84B2C1552B7F6999004C278A /* fairplay.cer */; };
 		84BCFA2A2B96D63000B717AC /* PallyConFPSSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84BCFA292B96D63000B717AC /* PallyConFPSSDK.xcframework */; };
 		84ED42B62B7257C5006D0E87 /* AVConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ED42B52B7257C5006D0E87 /* AVConfiguration.swift */; };
 /* End PBXBuildFile section */
@@ -48,7 +47,6 @@
 		5E23F77F099397094342571A /* Pods-Plugin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.debug.xcconfig"; sourceTree = "<group>"; };
 		840267472B73769B001429C6 /* ExtensionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionHelper.swift; sourceTree = "<group>"; };
 		8459EE872B7C9314004407EC /* AudioDRMViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDRMViewModel.swift; sourceTree = "<group>"; };
-		84B2C1552B7F6999004C278A /* fairplay.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = fairplay.cer; sourceTree = "<group>"; };
 		84BCFA292B96D63000B717AC /* PallyConFPSSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = PallyConFPSSDK.xcframework; sourceTree = "<group>"; };
 		84ED42B52B7257C5006D0E87 /* AVConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVConfiguration.swift; sourceTree = "<group>"; };
 		91781294A431A2A7CC6EB714 /* Pods-Plugin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.release.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.release.xcconfig"; sourceTree = "<group>"; };
@@ -84,7 +82,6 @@
 			isa = PBXGroup;
 			children = (
 				84BCFA292B96D63000B717AC /* PallyConFPSSDK.xcframework */,
-				84B2C1552B7F6999004C278A /* fairplay.cer */,
 				50ADFF8A201F53D600D50D53 /* Plugin */,
 				50ADFF95201F53D600D50D53 /* PluginTests */,
 				50ADFF89201F53D600D50D53 /* Products */,
@@ -246,7 +243,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84B2C1562B7F6999004C278A /* fairplay.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
