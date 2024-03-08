@@ -39,12 +39,12 @@ npx cap sync
 ### loadPallyconSound(...)
 
 ```typescript
-loadPallyconSound(options: { audioURL: String; token: String; notificationThumbnail: String; title: String; seekTime: number; contentId: String; }) => Promise<void>
+loadPallyconSound(options: { audioURL: String; author: String; token: String; notificationThumbnail: String; title: String; seekTime: number; contentId: String; }) => Promise<void>
 ```
 
-| Param         | Type                                                                                                                                                                                                                                               |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`options`** | <code>{ audioURL: <a href="#string">String</a>; token: <a href="#string">String</a>; notificationThumbnail: <a href="#string">String</a>; title: <a href="#string">String</a>; seekTime: number; contentId: <a href="#string">String</a>; }</code> |
+| Param         | Type                                                                                                                                                                                                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ audioURL: <a href="#string">String</a>; author: <a href="#string">String</a>; token: <a href="#string">String</a>; notificationThumbnail: <a href="#string">String</a>; title: <a href="#string">String</a>; seekTime: number; contentId: <a href="#string">String</a>; }</code> |
 
 --------------------
 

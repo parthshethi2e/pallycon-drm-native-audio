@@ -25,12 +25,14 @@ public class AudioDRMPlugin: CAPPlugin {
         let thumbnailUrl = call.getString("notificationThumbnail") ?? "Invalid"
         let seekTimeTo = call.getDouble("seekTime") ??  00
         let contentId = call.getString("contentId") ?? "error"
+        let author = call.getString("author") ?? ""
+        
         audioDRMViewModel.audioDRMToken = call.getString("token") ?? "invalid token"
-        playMusic(streamingURL: audioURL, title: audioTitle, thumbnailURL: thumbnailUrl, startTime: seekTimeTo,contentId: contentId)
+        playMusic(streamingURL: audioURL, title: audioTitle, thumbnailURL: thumbnailUrl, startTime: seekTimeTo,contentId: contentId, author:author)
         
     }
     
-    func playMusic(streamingURL:String, title:String,thumbnailURL: String,startTime:Double, contentId: String)
+    func playMusic(streamingURL:String, title:String,thumbnailURL: String,startTime:Double, contentId: String, author:String)
     {
         let escapedString = streamingURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
         
@@ -60,7 +62,7 @@ public class AudioDRMPlugin: CAPPlugin {
             
             AVPlayerConfiguration.sharedInstance.player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { [self] (CMTime) -> Void in
                 if AVPlayerConfiguration.sharedInstance.player.currentItem?.status == .readyToPlay {
-                    setNotificationForAudio(title: title, thumbnailURL: thumbnailURL)
+                    setNotificationForAudio(title: title, thumbnailURL: thumbnailURL, author: author)
 
                     if (AVPlayerConfiguration.sharedInstance.player.currentItem?.duration) != nil
                     {
@@ -104,7 +106,7 @@ public class AudioDRMPlugin: CAPPlugin {
         self.notifyListeners("soundEnded", data: [:])
     }
     
-    @objc public func setNotificationForAudio(title:String,thumbnailURL:String)
+    @objc public func setNotificationForAudio(title:String,thumbnailURL:String,author:String)
     {
         UIApplication.shared.beginReceivingRemoteControlEvents()
         
@@ -112,7 +114,7 @@ public class AudioDRMPlugin: CAPPlugin {
         
         var nowPlayingInfo = [String: Any]()
         nowPlayingInfo[MPMediaItemPropertyTitle] = title
-        nowPlayingInfo[MPMediaItemPropertyArtist] = "BBT Transcend"
+        nowPlayingInfo[MPMediaItemPropertyArtist] = author
         
         if let albumArtURL = URL(string: thumbnailURL) {
             URLSession.shared.dataTask(with: albumArtURL) { data, response, error in
