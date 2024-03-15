@@ -39,7 +39,11 @@ public class AudioDRMPlugin: CAPPlugin {
         let escapedString = streamingURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
         try? fpsSDK = PallyConFPSSDK(siteId: "USE5", siteKey: "LlS8F5b5rOmdM9leG0tYJH1kcLMO0jxz", fpsLicenseDelegate: nil)
      
-        UIApplication.shared.beginReceivingRemoteControlEvents()
+        let existingPlayer = AVPlayerConfiguration.sharedInstance.player
+        if existingPlayer.rate != 0 {
+            existingPlayer.pause()
+            existingPlayer.replaceCurrentItem(with: nil)
+        }
         
         AVPlayerConfiguration.sharedInstance.setPlayerWithURL()
         if let url = URL(string: escapedString!) {
@@ -116,7 +120,7 @@ public class AudioDRMPlugin: CAPPlugin {
     
     @objc public func setNotificationForAudio(title:String,thumbnailURL:String,author:String)
     {
-      
+        UIApplication.shared.beginReceivingRemoteControlEvents()
         
         guard let item = AVPlayerConfiguration.sharedInstance.player.currentItem else {return}
         
@@ -194,36 +198,36 @@ public class AudioDRMPlugin: CAPPlugin {
         }
     }
     
-    private func fetchCertificate(completion: @escaping (Data?) -> Void) {
-        let certificateURLString = "https://transcendapi.azurewebsites.net/fairplay.cer"
-        guard let certificateURL = URL(string: certificateURLString) else {
-            completion(nil)
-            return
-        }
-        
-        let request = URLRequest(url: certificateURL)
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error fetching certificate: \(error)")
-                completion(nil)
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode),
-                  let mimeType = httpResponse.mimeType, mimeType == "application/octet-stream",
-                  let certificateData = data else {
-                print("No data received or wrong response")
-                completion(nil)
-                return
-            }
-            
-            completion(certificateData)
-        }
-        
-        task.resume()
-    }
+//    private func fetchCertificate(completion: @escaping (Data?) -> Void) {
+//        let certificateURLString = "https://transcendapi.azurewebsites.net/fairplay.cer"
+//        guard let certificateURL = URL(string: certificateURLString) else {
+//            completion(nil)
+//            return
+//        }
+//        
+//        let request = URLRequest(url: certificateURL)
+//        
+//        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+//            if let error = error {
+//                print("Error fetching certificate: \(error)")
+//                completion(nil)
+//                return
+//            }
+//            
+//            guard let httpResponse = response as? HTTPURLResponse,
+//                  (200...299).contains(httpResponse.statusCode),
+//                  let mimeType = httpResponse.mimeType, mimeType == "application/octet-stream",
+//                  let certificateData = data else {
+//                print("No data received or wrong response")
+//                completion(nil)
+//                return
+//            }
+//            
+//            completion(certificateData)
+//        }
+//        
+//        task.resume()
+//    }
     
     @objc func handleAudioSessionInterruption(notification: Notification) {
         guard let userInfo = notification.userInfo,
@@ -246,7 +250,6 @@ public class AudioDRMPlugin: CAPPlugin {
             break
         }
     }
-    
     
     @objc func setAudioPlaybackRate(_ call: CAPPluginCall)
     {
@@ -302,7 +305,6 @@ public class AudioDRMPlugin: CAPPlugin {
             UIApplication.shared.endReceivingRemoteControlEvents()
         }
         
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         do {
             try AVAudioSession.sharedInstance().setActive(false)
         } catch {
