@@ -15,6 +15,8 @@ public class AudioDRMPlugin: CAPPlugin {
     private var timeObserverToken: Any?
     private var playerItemStatusObserver: NSKeyValueObservation?
     private var audioDRMViewModel = AudioDRMViewModel()
+    var nowPlayingInfo = [String: Any]()
+
     
     var fpsSDK: PallyConFPSSDK?
     
@@ -35,14 +37,20 @@ public class AudioDRMPlugin: CAPPlugin {
     func playMusic(streamingURL:String, title:String,thumbnailURL: String,startTime:Double, contentId: String, author:String)
     {
         let escapedString = streamingURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
-        
         try? fpsSDK = PallyConFPSSDK(siteId: "USE5", siteKey: "LlS8F5b5rOmdM9leG0tYJH1kcLMO0jxz", fpsLicenseDelegate: nil)
+     
+        UIApplication.shared.beginReceivingRemoteControlEvents()
         
         AVPlayerConfiguration.sharedInstance.setPlayerWithURL()
         if let url = URL(string: escapedString!) {
             
             let asset = AVURLAsset(url: url)
             fpsSDK?.prepare(urlAsset: asset, userId: "transcend", contentId: contentId, token: audioDRMViewModel.audioDRMToken)
+            
+            nowPlayingInfo[MPMediaItemPropertyTitle] = title
+            nowPlayingInfo[MPMediaItemPropertyArtist] = author
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+
             
             let playerItem = AVPlayerItem(asset: asset)
             AVPlayerConfiguration.sharedInstance.player = AVPlayer(playerItem: playerItem)
@@ -108,18 +116,17 @@ public class AudioDRMPlugin: CAPPlugin {
     
     @objc public func setNotificationForAudio(title:String,thumbnailURL:String,author:String)
     {
-        UIApplication.shared.beginReceivingRemoteControlEvents()
+      
         
         guard let item = AVPlayerConfiguration.sharedInstance.player.currentItem else {return}
         
-        var nowPlayingInfo = [String: Any]()
         nowPlayingInfo[MPMediaItemPropertyTitle] = title
         nowPlayingInfo[MPMediaItemPropertyArtist] = author
         
         if let albumArtURL = URL(string: thumbnailURL) {
             URLSession.shared.dataTask(with: albumArtURL) { data, response, error in
                 if let data = data, let image = UIImage(data: data) {
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [self] in
                         nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { size in
                             return image
                         }
