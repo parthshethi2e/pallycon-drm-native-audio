@@ -64,6 +64,8 @@ public class AudioDRMPlugin: CAPPlugin {
             playerItem.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] finished in
                 guard let self = self, finished else { return }
                 AVPlayerConfiguration.sharedInstance.player.play()
+                self.updateNowPlayingInfo(time: startTime)
+
             }
             
             NotificationCenter.default.addObserver(self, selector: #selector(self.finishedPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object:  AVPlayerConfiguration.sharedInstance.player.currentItem)
@@ -89,11 +91,6 @@ public class AudioDRMPlugin: CAPPlugin {
                         
                         if AVPlayerConfiguration.sharedInstance.player.currentItem?.isPlaybackLikelyToKeepUp == false {
                             self?.notifyListeners("isBuffering", data: [:])
-                        } else {
-                            let currentTimeSeconds = CMTimeGetSeconds(AVPlayerConfiguration.sharedInstance.player.currentTime())
-                            strongSelf.notifyListeners("timeUpdate", data: ["time": currentTimeSeconds])
-                            
-                            
                         }
                     }
 
@@ -112,7 +109,6 @@ public class AudioDRMPlugin: CAPPlugin {
             NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "error.localizedDescription"])
         }
     }
-    
     
     @objc func finishedPlaying( _ myNotification:NSNotification) {
         self.notifyListeners("soundEnded", data: [:])
@@ -197,37 +193,51 @@ public class AudioDRMPlugin: CAPPlugin {
             }
         }
     }
+
+    @objc func removeNotificationAndClearAudio(_ call: CAPPluginCall)
+    {
+        AVPlayerConfiguration.sharedInstance.player.pause()
+        AVPlayerConfiguration.sharedInstance.player.rate = 0
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        
+        DispatchQueue.main.async {
+            UIApplication.shared.endReceivingRemoteControlEvents()
+        }
+        
+        do {
+            try AVAudioSession.sharedInstance().setActive(false)
+        } catch {
+            print("Failed to deactivate audio session: \(error)")
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
+            AVPlayerConfiguration.sharedInstance.player.pause()
+            AVPlayerConfiguration.sharedInstance.player.rate = 0
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            
+            DispatchQueue.main.async {
+                UIApplication.shared.endReceivingRemoteControlEvents()
+            }
+            
+            do {
+                try AVAudioSession.sharedInstance().setActive(false)
+            } catch {
+                print("Failed to deactivate audio session: \(error)")
+            }
+        }
+        
+        call.resolve()
+    }
     
-//    private func fetchCertificate(completion: @escaping (Data?) -> Void) {
-//        let certificateURLString = "https://transcendapi.azurewebsites.net/fairplay.cer"
-//        guard let certificateURL = URL(string: certificateURLString) else {
-//            completion(nil)
-//            return
-//        }
-//        
-//        let request = URLRequest(url: certificateURL)
-//        
-//        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-//            if let error = error {
-//                print("Error fetching certificate: \(error)")
-//                completion(nil)
-//                return
-//            }
-//            
-//            guard let httpResponse = response as? HTTPURLResponse,
-//                  (200...299).contains(httpResponse.statusCode),
-//                  let mimeType = httpResponse.mimeType, mimeType == "application/octet-stream",
-//                  let certificateData = data else {
-//                print("No data received or wrong response")
-//                completion(nil)
-//                return
-//            }
-//            
-//            completion(certificateData)
-//        }
-//        
-//        task.resume()
-//    }
+    @objc func getCurrentTime(_ call: CAPPluginCall)
+    {
+        let currentTimeSeconds = CMTimeGetSeconds(AVPlayerConfiguration.sharedInstance.player.currentTime())
+        
+        call.resolve([
+            "time":currentTimeSeconds
+        ])
+        
+    }
     
     @objc func handleAudioSessionInterruption(notification: Notification) {
         guard let userInfo = notification.userInfo,
