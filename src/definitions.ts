@@ -1,7 +1,8 @@
 import { PluginListenerHandle } from "@capacitor/core";
 
 export interface AudioDRMPlugin {
-  loadPallyconSound(options: { audioURL:String, author:String, token:String,notificationThumbnail:String,title:String, seekTime:number, contentId:String}):Promise<void>;
+  
+  loadPallyconSound(options: { audioURL:String, author:String, token:String,notificationThumbnail:String,title:String, seekTime:number, contentId:String, isSampleAudio:Boolean  }):Promise<void>;
   pauseAudio(): Promise<void>;
   setAudioPlaybackRate(options: { speed: number }): Promise<void>;
   seekToTime(options: { seekTime: number }): Promise<void>;

@@ -16,7 +16,7 @@ public class AudioDRMPlugin: CAPPlugin {
     private var playerItemStatusObserver: NSKeyValueObservation?
     private var audioDRMViewModel = AudioDRMViewModel()
     var nowPlayingInfo = [String: Any]()
-
+    var sampleAudio:Bool = false
     
     var fpsSDK: PallyConFPSSDK?
     
@@ -28,6 +28,7 @@ public class AudioDRMPlugin: CAPPlugin {
         let seekTimeTo = call.getDouble("seekTime") ??  00
         let contentId = call.getString("contentId") ?? "error"
         let author = call.getString("author") ?? ""
+        sampleAudio = call.getBool("isSampleAudio") ?? false
         
         audioDRMViewModel.audioDRMToken = call.getString("token") ?? "invalid token"
         playMusic(streamingURL: audioURL, title: audioTitle, thumbnailURL: thumbnailUrl, startTime: seekTimeTo,contentId: contentId, author:author)
@@ -345,12 +346,26 @@ public class AudioDRMPlugin: CAPPlugin {
     }
     
     func addActionToPreviousCommand(){
-        MPRemoteCommandCenter.shared().previousTrackCommand.isEnabled = true
+        if sampleAudio
+        {
+            MPRemoteCommandCenter.shared().previousTrackCommand.isEnabled = false
+        }else
+        {
+            MPRemoteCommandCenter.shared().previousTrackCommand.isEnabled = true
+        }
+        
         MPRemoteCommandCenter.shared().previousTrackCommand.addTarget(self, action: #selector(previousButtonTapped))
     }
     
     func addActionToNextCommand(){
-        MPRemoteCommandCenter.shared().nextTrackCommand.isEnabled = true
+        
+        if sampleAudio
+        {
+            MPRemoteCommandCenter.shared().nextTrackCommand.isEnabled = false
+        }else
+        {
+            MPRemoteCommandCenter.shared().nextTrackCommand.isEnabled = true
+        }        
         MPRemoteCommandCenter.shared().nextTrackCommand.addTarget(self, action: #selector(nextButtonTapped))
     }
     

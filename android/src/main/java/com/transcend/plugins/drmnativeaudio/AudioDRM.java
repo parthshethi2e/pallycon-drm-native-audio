@@ -1,12 +1,11 @@
 package com.transcend.plugins.drmnativeaudio;
 
 import android.util.Log;
-import android.widget.Toast;
 
 public class AudioDRM {
 
-    public void loadPallyconSound()
-    {
-
+    public String echo(String value) {
+        Log.i("Echo", value);
+        return value;
     }
 }
