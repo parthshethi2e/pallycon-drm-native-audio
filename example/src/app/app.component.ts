@@ -29,8 +29,8 @@ export class AppComponent implements OnInit {
   {
     AudioDRM.loadPallyconSound(
       {
-        audioURL:"https://cdn.transcendstore.com/pallycon-audio/8341/hls/master.m3u8",
-        token:"eyJkcm1fdHlwZSI6IkZhaXJwbGF5Iiwic2l0ZV9pZCI6IlVTRTUiLCJ1c2VyX2lkIjoiMSIsImNpZCI6IjEiLCJwb2xpY3kiOiJHZk5mSlBsTWVnUWg5NHgyVXpJQkRSTHhyNGEySUM5QmhYMVBEQ0dVTVBIeVduZEYrMnRVK0psbUdRXC9Fc0F6N25tSFdLZjdTVXQxRGl5MU43aG45eHc9PSIsInRpbWVzdGFtcCI6IjIwMjQtMDQtMTlUMDc6MTk6NTJaIiwiaGFzaCI6ImFaZVdOekNTbW02d0h6UWRuaXNkakdcLzJqK0lSNm1XdUFDVVVkMFwvcktxYz0iLCJyZXNwb25zZV9mb3JtYXQiOiJvcmlnaW5hbCIsImtleV9yb3RhdGlvbiI6ZmFsc2V9",
+        audioURL:"https://cdn.transcendstore.com/pallycon-audio/22/dash/stream.mpd",
+        token:"eyJkcm1fdHlwZSI6IldpZGV2aW5lIiwic2l0ZV9pZCI6IlVTRTUiLCJ1c2VyX2lkIjoie1wiY3RcIjpcIjNpclNsXC9vTkVMNmU2OFptaVdXT2xxaDBTVVhWeEtTQXErTWxiaUk3dDlnPVwiLFwiaXZcIjpcImNlMmYwNWRlMWEwYzVlYzlhZDY2NTFhOThjNDQ2MDQyXCIsXCJzXCI6XCI1ZTVmYjY5OThiNWY2NjBhXCJ9IiwiY2lkIjoiMSIsInBvbGljeSI6IkdmTmZKUGxNZWdRaDk0eDJVeklCRFJMeHI0YTJJQzlCaFgxUERDR1VNUEh5V25kRisydFUrSmxtR1FcL0VzQXo3bm1IV0tmN1NVdDFEaXkxTjdobjl4dz09IiwidGltZXN0YW1wIjoiMjAyNC0wNi0xM1QwNDo0MjozMVoiLCJoYXNoIjoiSVJ3dnFlNnpUclwvcDVRVXBKTUJnUzhJRWw2QVN3U2xWQ0xSZ0tvWWpJUjQ9IiwicmVzcG9uc2VfZm9ybWF0Ijoib3JpZ2luYWwiLCJrZXlfcm90YXRpb24iOmZhbHNlfQ==",
         notificationThumbnail: "https://picsum.photos/200/300",
         title:"Bhagvad Gita",
         seekTime:60,
@@ -40,9 +40,9 @@ export class AppComponent implements OnInit {
         email:"parth.sheth58@gmail.com"
       })
 
-    //   AudioDRM.addListener('soundEnded', () => {
-    //     console.log('Sound playback ended');
-    //   });
+    AudioDRM.addListener('soundEnded', () => {
+      console.log('Sound playback ended');
+    });
 
 
 
@@ -56,18 +56,17 @@ export class AppComponent implements OnInit {
 
 
 
-    //   AudioDRM.addListener('audioLoaded', (info: any) => {
-    //     this.soundDuration = info.duration;
-    //     console.log('Duration:', info.duration);
-    // });
+      AudioDRM.addListener('audioLoaded', (info: any) => {
+        console.log('Duration:', info.soundDuration);
+    });
 
-    //   AudioDRM.addListener('isAudioPause',() => {
-    //     console.log("Event audio is paused")
-    //   })
+      AudioDRM.addListener('isAudioPause',() => {
+        console.log("Event audio is paused")
+      })
 
-    //   AudioDRM.addListener('isAudioPlaying',() => {
-    //     console.log("Event audio is played")
-    //   })
+      AudioDRM.addListener('isAudioPlaying',() => {
+        console.log("Event audio is played")
+      })
 
       AudioDRM.addListener('playerError', (message) => {
         console.error('AVPlayer Error:', message);
@@ -79,9 +78,9 @@ export class AppComponent implements OnInit {
 
   async getPaused()
   {
-    // const result = await AudioDRM.getPaused();
+    const result = await AudioDRM.getPaused();
 
-    // console.log("Audio Paused:"+ result.paused)
+    console.log("Audio Paused:"+ result.paused)
   }
 
   stopAudio()
@@ -91,12 +90,12 @@ export class AppComponent implements OnInit {
 
   seekToTime()
   {
-   // AudioDRM.seekToTime({seekTime:60})
+    AudioDRM.seekToTime({seekTime:60})
   }
 
   setPlaybackRate()
   {
-   // AudioDRM.setAudioPlaybackRate({speed:2.0})
+    AudioDRM.setAudioPlaybackRate({speed:2.0})
   }
 
   onPlayPause(): void {
@@ -112,14 +111,17 @@ export class AppComponent implements OnInit {
 
   play(): void
   {
-    //AudioDRM.playAudio()
+    AudioDRM.playAudio()
   }
 
   pause(): void {
-   //  AudioDRM.pauseAudio()
+     AudioDRM.pauseAudio()
   }
 
 
+  getCurrentTime(): void {
+    AudioDRM.getCurrentTime()
+ }
 
 
 

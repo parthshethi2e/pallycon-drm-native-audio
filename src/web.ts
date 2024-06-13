@@ -23,19 +23,26 @@ export class AudioDRMWeb extends WebPlugin implements AudioDRMPlugin {
     console.warn('Library not supported to web');
     console.warn('Library not supported to web');
     return { paused:false }
+
   }
+
   async stopCurrentAudio(): Promise<void> {
     console.warn('Library not supported to web');
   }
+
   async seekToTime(_options: { seekTime: number; }): Promise<void> {
     console.warn('Library not supported to web');
   }
+
   async setAudioPlaybackRate(_options: { speed: number; }): Promise<void> {
     console.warn('Library not supported to web');
   }
+
   async loadPallyconSound(_options: { audioURL: String; token: String; }): Promise<void> {
     console.warn('Library not supported to web');
   }
+  
+
   async playAudio(): Promise<void> {
     console.warn('Library not supported to web');
   }
