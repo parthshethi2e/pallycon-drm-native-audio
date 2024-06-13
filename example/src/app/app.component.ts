@@ -23,22 +23,22 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    AudioDRM.echo({value:"Hello Android"});
   }
 
   playDRMAudio():void
   {
-    // AudioDRM.loadPallyconSound(
-    //   {
-    //     audioURL:"https://bbttranscendstorage.blob.core.windows.net/pallycon-audio/3/hls/master.m3u8",
-    //     token:"eyJkcm1fdHlwZSI6IkZhaXJwbGF5Iiwic2l0ZV9pZCI6IlVTRTUiLCJ1c2VyX2lkIjoidHJhbnNjZW5kIiwiY2lkIjoiMSIsInBvbGljeSI6IkdmTmZKUGxNZWdRaDk0eDJVeklCRFJMeHI0YTJJQzlCaFgxUERDR1VNUEh5V25kRisydFUrSmxtR1EvRXNBejdubUhXS2Y3U1V0MURpeTFON2huOXh3PT0iLCJ0aW1lc3RhbXAiOiIyMDI0LTAzLTE5VDA2OjA3OjAwWiIsImhhc2giOiJGdFVaa1FseitpQ21QT1gxZjBJblhjekZXS1ZEQmU4SnNHWWVIdFExNjhjPSIsInJlc3BvbnNlX2Zvcm1hdCI6Im9yaWdpbmFsIiwia2V5X3JvdGF0aW9uIjpmYWxzZX0=",
-    //     notificationThumbnail: "https://picsum.photos/200/300",
-    //     title:"Bhagvad Gita",
-    //     seekTime:60,
-    //     contentId:"1",
-    //     author:"Transcend",
-    //     isSampleAudio:true
-    //   })
+    AudioDRM.loadPallyconSound(
+      {
+        audioURL:"https://cdn.transcendstore.com/pallycon-audio/8341/hls/master.m3u8",
+        token:"eyJkcm1fdHlwZSI6IkZhaXJwbGF5Iiwic2l0ZV9pZCI6IlVTRTUiLCJ1c2VyX2lkIjoiMSIsImNpZCI6IjEiLCJwb2xpY3kiOiJHZk5mSlBsTWVnUWg5NHgyVXpJQkRSTHhyNGEySUM5QmhYMVBEQ0dVTVBIeVduZEYrMnRVK0psbUdRXC9Fc0F6N25tSFdLZjdTVXQxRGl5MU43aG45eHc9PSIsInRpbWVzdGFtcCI6IjIwMjQtMDQtMTlUMDc6MTk6NTJaIiwiaGFzaCI6ImFaZVdOekNTbW02d0h6UWRuaXNkakdcLzJqK0lSNm1XdUFDVVVkMFwvcktxYz0iLCJyZXNwb25zZV9mb3JtYXQiOiJvcmlnaW5hbCIsImtleV9yb3RhdGlvbiI6ZmFsc2V9",
+        notificationThumbnail: "https://picsum.photos/200/300",
+        title:"Bhagvad Gita",
+        seekTime:60,
+        contentId:"1",
+        author:"Transcend",
+        isSampleAudio:true,
+        email:"parth.sheth58@gmail.com"
+      })
 
     //   AudioDRM.addListener('soundEnded', () => {
     //     console.log('Sound playback ended');
@@ -69,9 +69,10 @@ export class AppComponent implements OnInit {
     //     console.log("Event audio is played")
     //   })
 
-    //   AudioDRM.addListener('playerError', (error) => {
-    //     console.error('AVPlayer Error:', error);
-    //   });
+      AudioDRM.addListener('playerError', (message) => {
+        console.error('AVPlayer Error:', message);
+      });
+
 
   }
 

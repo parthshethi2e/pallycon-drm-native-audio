@@ -40,12 +40,12 @@ npx cap sync
 ### loadPallyconSound(...)
 
 ```typescript
-loadPallyconSound(options: { audioURL: String; author: String; token: String; notificationThumbnail: String; title: String; seekTime: number; contentId: String; isSampleAudio: Boolean; }) => Promise<void>
+loadPallyconSound(options: { audioURL: String; author: String; token: String; notificationThumbnail: String; title: String; seekTime: number; contentId: String; isSampleAudio: Boolean; email: String; }) => Promise<void>
 ```
 
-| Param         | Type                                                                                                                                                                                                                                                                                                                                    |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`options`** | <code>{ audioURL: <a href="#string">String</a>; author: <a href="#string">String</a>; token: <a href="#string">String</a>; notificationThumbnail: <a href="#string">String</a>; title: <a href="#string">String</a>; seekTime: number; contentId: <a href="#string">String</a>; isSampleAudio: <a href="#boolean">Boolean</a>; }</code> |
+| Param         | Type                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ audioURL: <a href="#string">String</a>; author: <a href="#string">String</a>; token: <a href="#string">String</a>; notificationThumbnail: <a href="#string">String</a>; title: <a href="#string">String</a>; seekTime: number; contentId: <a href="#string">String</a>; isSampleAudio: <a href="#boolean">Boolean</a>; email: <a href="#string">String</a>; }</code> |
 
 --------------------
 
@@ -177,13 +177,13 @@ addListener(eventName: 'notificationNextCalled', listenerFunc: () => void) => Pr
 ### addListener('playerError', ...)
 
 ```typescript
-addListener(eventName: 'playerError', listenerFunc: (error: any) => void) => Promise<PluginListenerHandle>
+addListener(eventName: 'playerError', listenerFunc: (message: any) => void) => Promise<PluginListenerHandle>
 ```
 
-| Param              | Type                                 |
-| ------------------ | ------------------------------------ |
-| **`eventName`**    | <code>'playerError'</code>           |
-| **`listenerFunc`** | <code>(error: any) =&gt; void</code> |
+| Param              | Type                                   |
+| ------------------ | -------------------------------------- |
+| **`eventName`**    | <code>'playerError'</code>             |
+| **`listenerFunc`** | <code>(message: any) =&gt; void</code> |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
