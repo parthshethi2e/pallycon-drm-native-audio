@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.os.Handler;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.PlaybackParameters;
@@ -11,6 +13,7 @@ import androidx.media3.common.Player;
 import androidx.media3.common.util.Util;
 import androidx.media3.exoplayer.ExoPlaybackException;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.drm.DrmSessionManager;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import com.getcapacitor.JSObject;
@@ -32,6 +35,7 @@ import com.pallycon.widevine.sdk.PallyConWvSDK;
 public class AudioDRMPlugin extends Plugin {
 
     MediaSource mediaSource = null;
+    @SuppressLint("UnsafeOptInUsageError")
     private DefaultTrackSelector trackSelector;
     private Handler handler;
     private Runnable runnable;
@@ -45,48 +49,46 @@ public class AudioDRMPlugin extends Plugin {
 
     private PallyConEventListener drmListener = new PallyConEventListener() {
         @Override
-        public void onFailed(@Nullable String currentUrl, @Nullable PallyConException e) {
+        public void onFailed(@NonNull ContentData contentData, @Nullable PallyConLicenseServerException e) {
             JSObject ret = new JSObject();
             ret.put("message",e.message());
             notifyListeners("playerError",ret);
         }
 
         @Override
-        public void onFailed(@Nullable String currentUrl, @Nullable PallyConLicenseServerException e) {
-
+        public void onFailed(@NonNull ContentData contentData, @Nullable PallyConException e) {
             JSObject ret = new JSObject();
             ret.put("message",e.message());
             notifyListeners("playerError",ret);
-            //System.out.println("45:" + e.message());
         }
 
         @Override
-        public void onPaused(@Nullable String currentUrl) {
-
-        }
-
-        @Override
-        public void onRemoved(@Nullable String currentUrl) {
+        public void onPaused(@NonNull ContentData contentData) {
 
         }
 
         @Override
-        public void onRestarting(@Nullable String currentUrl) {
+        public void onRemoved(@NonNull ContentData contentData) {
 
         }
 
         @Override
-        public void onStopped(@Nullable String currentUrl) {
+        public void onRestarting(@NonNull ContentData contentData) {
 
         }
 
         @Override
-        public void onProgress(@Nullable String currentUrl, float percent, long downloadedBytes) {
+        public void onStopped(@NonNull ContentData contentData) {
 
         }
 
         @Override
-        public void onCompleted(@Nullable String currentUrl) {
+        public void onProgress(@NonNull ContentData contentData, float v, long l) {
+
+        }
+
+        @Override
+        public void onCompleted(@NonNull ContentData contentData) {
 
         }
     };
@@ -167,16 +169,17 @@ public class AudioDRMPlugin extends Plugin {
     {
         String audioUrl = call.getString("audioURL");
         String token = call.getString("token");
+
         if (Util.SDK_INT > 23) {
 
             try {
-                PallyConDrmConfigration config = new PallyConDrmConfigration("USE5", token);
-
-                ContentData content = new ContentData(audioUrl, "", config);
+                PallyConDrmConfigration config = new PallyConDrmConfigration("USE5", "eyJkcm1fdHlwZSI6IldpZGV2aW5lIiwic2l0ZV9pZCI6IlVTRTUiLCJ1c2VyX2lkIjoie1wiY3RcIjpcInVvNmJQY05UMkdtbkVOMmMyNldmUUdVb015OTNxSmVIKzFBRFpQcThxdkk9XCIsXCJpdlwiOlwiOTA4ZWU2YWYwMGNkMGNkMjBiMzUyZWIzZmU4OWZkZTlcIixcInNcIjpcIjQxNDBkZWIxYmMyNzM2NjBcIn0iLCJjaWQiOiIxIiwicG9saWN5IjoiR2ZOZkpQbE1lZ1FoOTR4MlV6SUJEUkx4cjRhMklDOUJoWDFQRENHVU1QSHlXbmRGKzJ0VStKbG1HUVwvRXNBejdubUhXS2Y3U1V0MURpeTFON2huOXh3PT0iLCJ0aW1lc3RhbXAiOiIyMDI0LTA3LTE1VDA4OjQ1OjU0WiIsImhhc2giOiJcL0FhMGtoeEhMN2ROZzB1enpNVXhubWU5aElOUUxydDVOaDlCdXRRNjFJWT0iLCJyZXNwb25zZV9mb3JtYXQiOiJvcmlnaW5hbCIsImtleV9yb3RhdGlvbiI6ZmFsc2V9");
+                ContentData content = new ContentData(audioUrl, config);
                 WVMAgent = PallyConWvSDK.createPallyConWvSDK(getContext(),content);
+                DrmSessionManager manager = WVMAgent.getDrmSessionManager();
                 WVMAgent.setPallyConEventListener(drmListener);
                 try {
-                    mediaSource = WVMAgent.getMediaSource();
+                    mediaSource = WVMAgent.getMediaSource(manager);
                     trackSelector = new DefaultTrackSelector(getContext());
                 } catch (PallyConException.ContentDataException e) {
                     e.printStackTrace();
