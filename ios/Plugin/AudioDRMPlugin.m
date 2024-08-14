@@ -13,6 +13,5 @@ CAP_PLUGIN(AudioDRMPlugin, "AudioDRM",
            CAP_PLUGIN_METHOD(getPaused, CAPPluginReturnPromise);        
            CAP_PLUGIN_METHOD(getCurrentTime, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(removeNotificationAndClearAudio, CAPPluginReturnPromise);
-           
 )
 

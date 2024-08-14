@@ -17,8 +17,9 @@ public class AudioDRMPlugin: CAPPlugin {
     private var audioDRMViewModel = AudioDRMViewModel()
     var nowPlayingInfo = [String: Any]()
     var sampleAudio:Bool = false
-    
     var fpsSDK: PallyConFPSSDK?
+    
+    let CERTIFICATE_URL = "https://license-global.pallycon.com/ri/fpsKeyManager.do?siteId=USE5"
     
     @objc func loadPallyconSound(_ call: CAPPluginCall)
     {
@@ -39,12 +40,11 @@ public class AudioDRMPlugin: CAPPlugin {
     
     func playMusic(streamingURL:String, title:String,thumbnailURL: String,startTime:Double, contentId: String, author:String,email: String)
     {
-        
         do
         {
             let escapedString = streamingURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
-            try fpsSDK = PallyConFPSSDK(siteId: "USE5", siteKey: "LlS8F5b5rOmdM9leG0tYJH1kcLMO0jxz", fpsLicenseDelegate: nil)
-            
+            fpsSDK = PallyConFPSSDK()
+            //try fpsSDK = PallyConFPSSDK(siteId: "USE5", siteKey: "LlS8F5b5rOmdM9leG0tYJH1kcLMO0jxz", fpsLicenseDelegate: nil)
             let existingPlayer = AVPlayerConfiguration.sharedInstance.player
             if existingPlayer.rate != 0 {
                 existingPlayer.pause()
@@ -56,7 +56,10 @@ public class AudioDRMPlugin: CAPPlugin {
             {
                 
                 let asset = AVURLAsset(url: url)
-                fpsSDK?.prepare(urlAsset: asset, userId: email, contentId: contentId, token: audioDRMViewModel.audioDRMToken)
+                let config = PallyConDrmConfiguration(avURLAsset: asset, contentId: contentId, certificateUrl: CERTIFICATE_URL,authData: audioDRMViewModel.audioDRMToken)
+
+                
+               fpsSDK?.prepare(Content: config)
                 
                 nowPlayingInfo[MPMediaItemPropertyTitle] = title
                 nowPlayingInfo[MPMediaItemPropertyArtist] = author
@@ -409,8 +412,8 @@ public class AudioDRMPlugin: CAPPlugin {
     }
     
     func addActionToChangePlayBackPosition(){
-        MPRemoteCommandCenter.shared().changePlaybackPositionCommand.isEnabled = false
-        // MPRemoteCommandCenter.shared().changePlaybackPositionCommand.addTarget(self, action: #selector(changePlaybackPosition))
+        MPRemoteCommandCenter.shared().changePlaybackPositionCommand.isEnabled = true
+        MPRemoteCommandCenter.shared().changePlaybackPositionCommand.addTarget(self, action: #selector(changePlaybackPosition))
     }
     
     func addActionToseekForwardCommand(){
@@ -466,5 +469,13 @@ public class AudioDRMPlugin: CAPPlugin {
         call.resolve([
             "paused": !isPlaying
         ])
+    }
+    
+    @objc func changePlaybackPosition(_ event: MPChangePlaybackPositionCommandEvent) -> MPRemoteCommandHandlerStatus {
+        let newTime = CMTime(seconds: event.positionTime, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        AVPlayerConfiguration.sharedInstance.player.seek(to: newTime) { completed in
+            // Optionally handle completion
+        }
+        return .success
     }
 }
