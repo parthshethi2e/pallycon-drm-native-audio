@@ -53,6 +53,9 @@ export class AudioDRMWeb extends WebPlugin implements AudioDRMPlugin {
     console.warn('Library not supported to web');
   }
 
+  async loadAudioLecture(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 
 }
 
