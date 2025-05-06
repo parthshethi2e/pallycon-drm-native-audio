@@ -124,7 +124,17 @@ export class AppComponent implements OnInit {
  }
 
  
-
+ playSpLecure(): void
+ {
+  AudioDRM.loadAudioLecture({
+    audioURL: "https://transcendstoredrm.blob.core.windows.net/sp-lectures-m3u8/462/audio.m3u8",
+    author: "Example Author",
+    notificationThumbnail: "https://transcendstore-rapidstage.azurewebsites.net/assets/images_for_app/transcend-square-icon.png",
+    title: "Sample Lecture",
+    seekTime: 0,
+    contentId: "lecture1"
+  });
+ }
 
 
 }

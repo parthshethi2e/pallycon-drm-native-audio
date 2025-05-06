@@ -44,6 +44,7 @@ public class AudioDRMPlugin: CAPPlugin {
         {
             let escapedString = streamingURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
             fpsSDK = PallyConFPSSDK()
+            
             //try fpsSDK = PallyConFPSSDK(siteId: "USE5", siteKey: "LlS8F5b5rOmdM9leG0tYJH1kcLMO0jxz", fpsLicenseDelegate: nil)
             let existingPlayer = AVPlayerConfiguration.sharedInstance.player
             if existingPlayer.rate != 0 {
@@ -112,6 +113,8 @@ public class AudioDRMPlugin: CAPPlugin {
                                 guard let error = playerItem.error else { return }
                                 NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": error.localizedDescription])
                             }
+                            
+                        
                         })
                     }
                    
@@ -532,7 +535,7 @@ public class AudioDRMPlugin: CAPPlugin {
             
             AVPlayerConfiguration.sharedInstance.player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { [self] (CMTime) -> Void in
                 if AVPlayerConfiguration.sharedInstance.player.currentItem?.status == .readyToPlay {
-                    setNotificationForAudio(title: author, thumbnailURL: thumbnailUrl, author: author)
+                    setNotificationForAudio(title: audioTitle, thumbnailURL: thumbnailUrl, author: author)
                     
                     if (AVPlayerConfiguration.sharedInstance.player.currentItem?.duration) != nil
                     {
