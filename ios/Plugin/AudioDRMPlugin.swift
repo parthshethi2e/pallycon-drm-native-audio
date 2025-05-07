@@ -353,9 +353,12 @@ public class AudioDRMPlugin: CAPPlugin {
 
     @objc func stopCurrentAudio(_ call: CAPPluginCall)
     {
+        self.removeAllListeners(call)
         AVPlayerConfiguration.sharedInstance.player.pause()
         AVPlayerConfiguration.sharedInstance.player.rate = 0
         AVPlayerConfiguration.sharedInstance.player.replaceCurrentItem(with: nil)
+        
+        
         
         DispatchQueue.main.async {
             UIApplication.shared.endReceivingRemoteControlEvents()
