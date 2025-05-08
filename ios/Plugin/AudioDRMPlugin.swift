@@ -53,19 +53,19 @@ public class AudioDRMPlugin: CAPPlugin {
             }
             
             AVPlayerConfiguration.sharedInstance.setPlayerWithURL()
-            if let url = URL(string: escapedString!) 
+            if let url = URL(string: escapedString!)
             {
                 
                 let asset = AVURLAsset(url: url)
                 let config = PallyConDrmConfiguration(avURLAsset: asset, contentId: contentId, certificateUrl: CERTIFICATE_URL,authData: audioDRMViewModel.audioDRMToken)
-
                 
-               fpsSDK?.prepare(Content: config)
+                
+                fpsSDK?.prepare(Content: config)
                 
                 nowPlayingInfo[MPMediaItemPropertyTitle] = title
                 nowPlayingInfo[MPMediaItemPropertyArtist] = author
                 MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-
+                
                 
                 let playerItem = AVPlayerItem(asset: asset)
                 AVPlayerConfiguration.sharedInstance.player = AVPlayer(playerItem: playerItem)
@@ -76,11 +76,11 @@ public class AudioDRMPlugin: CAPPlugin {
                     guard let self = self, finished else { return }
                     AVPlayerConfiguration.sharedInstance.player.play()
                     self.updateNowPlayingInfo(time: startTime)
-
+                    
                 }
                 
                 playerItem.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: [.old, .new], context: nil)
-
+                
                 
                 NotificationCenter.default.addObserver(self, selector: #selector(self.finishedPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object:  AVPlayerConfiguration.sharedInstance.player.currentItem)
                 NotificationCenter.default.addObserver(self, selector: #selector(handleAudioSessionInterruption), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
@@ -91,7 +91,7 @@ public class AudioDRMPlugin: CAPPlugin {
                 AVPlayerConfiguration.sharedInstance.player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { [self] (CMTime) -> Void in
                     if AVPlayerConfiguration.sharedInstance.player.currentItem?.status == .readyToPlay {
                         setNotificationForAudio(title: title, thumbnailURL: thumbnailURL, author: author)
-
+                        
                         if (AVPlayerConfiguration.sharedInstance.player.currentItem?.duration) != nil
                         {
                             
@@ -107,17 +107,17 @@ public class AudioDRMPlugin: CAPPlugin {
                                 self?.notifyListeners("isBuffering", data: [:])
                             }
                         }
-
+                        
                         playerItemStatusObserver = AVPlayerConfiguration.sharedInstance.player.currentItem?.observe(\.status, options: [.new, .old], changeHandler: { (playerItem, change) in
                             if playerItem.status == .failed {
                                 guard let error = playerItem.error else { return }
                                 NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": error.localizedDescription])
                             }
                             
-                        
+                            
                         })
                     }
-                   
+                    
                     
                 }
             }else
@@ -132,7 +132,7 @@ public class AudioDRMPlugin: CAPPlugin {
             print("Unknown Error occured")
         }
         
-      
+        
     }
     
     @objc func finishedPlaying( _ myNotification:NSNotification) {
@@ -213,7 +213,7 @@ public class AudioDRMPlugin: CAPPlugin {
                 self.notifyListeners("isAudioPause", data: [:])
             } else if player.timeControlStatus == .playing {
                 self.notifyListeners("isAudioPlaying", data: [:])
-
+                
             }
             
         }
@@ -239,7 +239,7 @@ public class AudioDRMPlugin: CAPPlugin {
         }
         
     }
-
+    
     @objc func removeNotificationAndClearAudio(_ call: CAPPluginCall)
     {
         AVPlayerConfiguration.sharedInstance.player.pause()
@@ -318,7 +318,7 @@ public class AudioDRMPlugin: CAPPlugin {
         let seconds = call.getDouble("seekTime") ?? 0.0
         let preferredTimeScale: CMTimeScale = 1_000
         let time = CMTime(seconds: seconds, preferredTimescale: preferredTimeScale)
-
+        
         DispatchQueue.main.async {
             AVPlayerConfiguration.sharedInstance.player.seek(to: time, completionHandler: { [weak self] success in
                 guard let self = self else { return }
@@ -350,15 +350,17 @@ public class AudioDRMPlugin: CAPPlugin {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
         }
     }
-
+    
     @objc func stopCurrentAudio(_ call: CAPPluginCall)
     {
         self.removeAllListeners(call)
+        self.removeTimeObserver()
+        self.unRegisterRemoteCommands()
+        NotificationCenter.default.removeObserver(self)
+        
         AVPlayerConfiguration.sharedInstance.player.pause()
         AVPlayerConfiguration.sharedInstance.player.rate = 0
         AVPlayerConfiguration.sharedInstance.player.replaceCurrentItem(with: nil)
-        
-        
         
         DispatchQueue.main.async {
             UIApplication.shared.endReceivingRemoteControlEvents()
@@ -413,7 +415,7 @@ public class AudioDRMPlugin: CAPPlugin {
         }else
         {
             MPRemoteCommandCenter.shared().nextTrackCommand.isEnabled = true
-        }        
+        }
         MPRemoteCommandCenter.shared().nextTrackCommand.addTarget(self, action: #selector(nextButtonTapped))
     }
     
@@ -486,85 +488,105 @@ public class AudioDRMPlugin: CAPPlugin {
     }
     
     @objc func loadAudioLecture(_ call: CAPPluginCall)
+    {
+        let audioURL = call.getString("audioURL") ?? "error"
+        let audioTitle = call.getString("title") ?? "error"
+        let thumbnailUrl = call.getString("notificationThumbnail") ?? "Invalid"
+        let seekTimeTo = call.getDouble("seekTime") ??  00
+        let contentId = call.getString("contentId") ?? "error"
+        let author = call.getString("author") ?? ""
+        
+        sampleAudio = false
+        
+        guard let url = URL(string: audioURL)else
         {
-            let audioURL = call.getString("audioURL") ?? "error"
-            let audioTitle = call.getString("title") ?? "error"
-            let thumbnailUrl = call.getString("notificationThumbnail") ?? "Invalid"
-            let seekTimeTo = call.getDouble("seekTime") ??  00
-            let contentId = call.getString("contentId") ?? "error"
-            let author = call.getString("author") ?? ""
-            
-            guard let url = URL(string: audioURL)else
-            {
-                NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "error.localizedDescription"])
-                return
-            }
-            
-            let existingPlayer = AVPlayerConfiguration.sharedInstance.player
-            if existingPlayer.rate != 0 {
-                existingPlayer.pause()
-                existingPlayer.replaceCurrentItem(with: nil)
-            }
-            
-            AVPlayerConfiguration.sharedInstance.setPlayerWithURL()
-            
-            let asset = AVURLAsset(url: url)
-            
-            nowPlayingInfo[MPMediaItemPropertyTitle] = audioTitle
-            nowPlayingInfo[MPMediaItemPropertyArtist] = author
-            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-            
-            
-            let playerItem = AVPlayerItem(asset: asset)
-            AVPlayerConfiguration.sharedInstance.player = AVPlayer(playerItem: playerItem)
+            NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": "error.localizedDescription"])
+            return
+        }
+        
+        let existingPlayer = AVPlayerConfiguration.sharedInstance.player
+        if existingPlayer.rate != 0 {
+            existingPlayer.pause()
+            existingPlayer.replaceCurrentItem(with: nil)
+        }
+        
+        AVPlayerConfiguration.sharedInstance.setPlayerWithURL()
+        
+        let asset = AVURLAsset(url: url)
+        
+        nowPlayingInfo[MPMediaItemPropertyTitle] = audioTitle
+        nowPlayingInfo[MPMediaItemPropertyArtist] = author
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        
+        
+        let playerItem = AVPlayerItem(asset: asset)
+        AVPlayerConfiguration.sharedInstance.player = AVPlayer(playerItem: playerItem)
+        AVPlayerConfiguration.sharedInstance.player.play()
+        
+        let seekTime = CMTime(seconds: seekTimeTo, preferredTimescale: 1_000)
+        playerItem.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] finished in
+            guard let self = self, finished else { return }
             AVPlayerConfiguration.sharedInstance.player.play()
+            self.updateNowPlayingInfo(time: seekTimeTo)
             
-            let seekTime = CMTime(seconds: seekTimeTo, preferredTimescale: 1_000)
-            playerItem.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] finished in
-                guard let self = self, finished else { return }
-                AVPlayerConfiguration.sharedInstance.player.play()
-                self.updateNowPlayingInfo(time: seekTimeTo)
+        }
+        
+        playerItem.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: [.old, .new], context: nil)
+        
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.finishedPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object:  AVPlayerConfiguration.sharedInstance.player.currentItem)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleAudioSessionInterruption), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
+        NotificationCenter.default.addObserver(self, selector: #selector(errorNotificationCall), name: .audioPlayerErrorNotification , object: nil)
+        
+        AVPlayerConfiguration.sharedInstance.player.addObserver(self, forKeyPath: "timeControlStatus", options: [.old, .new], context: nil)
+        
+        AVPlayerConfiguration.sharedInstance.player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { [self] (CMTime) -> Void in
+            if AVPlayerConfiguration.sharedInstance.player.currentItem?.status == .readyToPlay {
+                setNotificationForAudio(title: audioTitle, thumbnailURL: thumbnailUrl, author: author)
                 
-            }
-            
-            playerItem.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: [.old, .new], context: nil)
-            
-            
-            NotificationCenter.default.addObserver(self, selector: #selector(self.finishedPlaying(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object:  AVPlayerConfiguration.sharedInstance.player.currentItem)
-            NotificationCenter.default.addObserver(self, selector: #selector(handleAudioSessionInterruption), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
-            NotificationCenter.default.addObserver(self, selector: #selector(errorNotificationCall), name: .audioPlayerErrorNotification , object: nil)
-            
-            AVPlayerConfiguration.sharedInstance.player.addObserver(self, forKeyPath: "timeControlStatus", options: [.old, .new], context: nil)
-            
-            AVPlayerConfiguration.sharedInstance.player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { [self] (CMTime) -> Void in
-                if AVPlayerConfiguration.sharedInstance.player.currentItem?.status == .readyToPlay {
-                    setNotificationForAudio(title: audioTitle, thumbnailURL: thumbnailUrl, author: author)
+                if (AVPlayerConfiguration.sharedInstance.player.currentItem?.duration) != nil
+                {
                     
-                    if (AVPlayerConfiguration.sharedInstance.player.currentItem?.duration) != nil
-                    {
-                        
-                        let totalSeconds = CMTimeGetSeconds((AVPlayerConfiguration.sharedInstance.player.currentItem?.asset.duration)!)
-                        self.notifyListeners("audioLoaded", data: ["duration": totalSeconds])
-                        
-                    }
+                    let totalSeconds = CMTimeGetSeconds((AVPlayerConfiguration.sharedInstance.player.currentItem?.asset.duration)!)
+                    self.notifyListeners("audioLoaded", data: ["duration": totalSeconds])
                     
-                    timeObserverToken = AVPlayerConfiguration.sharedInstance.player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { [weak self] (CMTime) in
-                        guard let strongSelf = self else { return }
-                        
-                        if AVPlayerConfiguration.sharedInstance.player.currentItem?.isPlaybackLikelyToKeepUp == false {
-                            self?.notifyListeners("isBuffering", data: [:])
-                        }
-                    }
-                    
-                    playerItemStatusObserver = AVPlayerConfiguration.sharedInstance.player.currentItem?.observe(\.status, options: [.new, .old], changeHandler: { (playerItem, change) in
-                        if playerItem.status == .failed {
-                            guard let error = playerItem.error else { return }
-                            NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": error.localizedDescription])
-                        }
-                    })
                 }
                 
+                timeObserverToken = AVPlayerConfiguration.sharedInstance.player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { [weak self] (CMTime) in
+                    guard let strongSelf = self else { return }
+                    
+                    if AVPlayerConfiguration.sharedInstance.player.currentItem?.isPlaybackLikelyToKeepUp == false {
+                        self?.notifyListeners("isBuffering", data: [:])
+                    }
+                }
+                
+                playerItemStatusObserver = AVPlayerConfiguration.sharedInstance.player.currentItem?.observe(\.status, options: [.new, .old], changeHandler: { (playerItem, change) in
+                    if playerItem.status == .failed {
+                        guard let error = playerItem.error else { return }
+                        NotificationCenter.default.post(name: .audioPlayerErrorNotification, object: nil, userInfo: ["playerError": error.localizedDescription])
+                    }
+                })
             }
             
         }
+        
+    }
+    
+    
+    func unRegisterRemoteCommands()
+    {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.playCommand.removeTarget(nil)
+        commandCenter.nextTrackCommand.removeTarget(nil)
+        commandCenter.previousTrackCommand.removeTarget(nil)
+        commandCenter.pauseCommand.removeTarget(nil)
+        commandCenter.seekForwardCommand.removeTarget(nil)
+        commandCenter.seekBackwardCommand.removeTarget(nil)
+        
+    }
+    
+    deinit
+    {
+        
+    }
 }
